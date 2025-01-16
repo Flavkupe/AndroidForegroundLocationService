@@ -159,8 +159,6 @@ public class AndroidForegroundLocationProvider : MonoBehaviour
         using AndroidJavaClass serviceClass = new AndroidJavaClass(SERVICE_CLASS);
         var locationsJSON = serviceClass.CallStatic<string>("getLocations");
 
-        Debug.Log(locationsJSON);
-
         var coordsList = JsonUtility.FromJson<BackgroundCoordinateList>(locationsJSON);
         if (coordsList == null || coordsList.Coordinates == null)
         {
