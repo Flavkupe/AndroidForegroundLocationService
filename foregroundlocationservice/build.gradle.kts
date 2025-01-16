@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.vegetablegames.mapgame.foregroundlocationservice"
+    namespace = "com.flavkupe.foregroundlocationservice"
     compileSdk = 34
 
     defaultConfig {

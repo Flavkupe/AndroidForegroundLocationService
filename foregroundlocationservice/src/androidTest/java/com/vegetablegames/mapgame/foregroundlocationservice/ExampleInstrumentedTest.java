@@ -1,4 +1,4 @@
-package com.vegetablegames.mapgame.foregroundlocationservice;
+package com.flavkupe.foregroundlocationservice;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.vegetablegames.mapgame.foregroundlocationservice.test", appContext.getPackageName());
+        assertEquals("com.flavkupe.foregroundlocationservice.test", appContext.getPackageName());
     }
 }

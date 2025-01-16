@@ -1,4 +1,4 @@
-package com.vegetablegames.mapgame.foregroundlocationservice;
+package com.flavkupe.foregroundlocationservice;
 
 import android.Manifest;
 import android.app.Activity;
@@ -50,18 +50,22 @@ public class LocationService extends Service {
 
     private static final String TAG = "LocationService";
 
-    // How many ms pass before polling location, by default
+    // How many ms pass before polling location, by default.
+    // You can modify this value if you wish.
     private static int LOCATION_INTERVAL = 5000;
 
 
     // Minimum meters required to travel before polling for position.
+    // You can modify this value if you wish.
     private static int MIN_LOCATION_POLL_METERS = 50;
 
     // How many items should be accumulated before doubling the poll duration
+    // You can modify this value if you wish.
     private static int ITEMS_TO_INTERVAL_CHANGE = 200;
 
     // Maximum coordinates kept in memory; after this threshold is crossed, no more updates will
     // be done until the stored coordinates are read and the list of locations is cleared.
+    // You can modify this value if you wish.
     private static int UPDATE_LIMIT = 1000;
 
     private int currentInterval = LOCATION_INTERVAL;
@@ -72,31 +76,23 @@ public class LocationService extends Service {
 
     private final ArrayList<Coordinates> locations = new ArrayList<>();
 
+    // Call this externally to start this service.
     public static void startLocationService(Activity activity) {
         if (instance != null) {
             return;
         }
 
         mainActivity = activity;
-        Log.v(TAG, "Called StartLocationService");
         activity.startService(new Intent(activity, LocationService.class));
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.v(TAG, "Called onCreate");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (instance != null) {
-            Log.v(TAG, "Called onStartCommand instance exists");
             return START_STICKY;
         }
 
         instance = this;
-        Log.v(TAG, "Called onStartCommand");
         createNotificationChannel();
         startForeground(1, getNotification(intent));
 
@@ -105,27 +101,19 @@ public class LocationService extends Service {
     }
 
     @Override
-    public void onDestroy() {
-        Log.v(TAG, "Called onDestroy");
-        super.onDestroy();
-    }
-
-    @Override
     public IBinder onBind(Intent intent) {
-        Log.v(TAG, "Called onBind");
         return null;
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Log.v(TAG, "Called onTaskRemoved");
         stopForeground(true);
         stopSelf();
     }
 
+    // Call this externally from your app once the screen is unlocked in order
+    // to get a json string containing the list of polled locations.
     public static String getLocations() {
-        Log.v(TAG, "Called getLocations");
-
         if (instance == null) {
             Log.v(TAG, "Cannot get locations: instance is null");
             return null;
@@ -142,9 +130,7 @@ public class LocationService extends Service {
 
     private void createNotificationChannel() {
         try {
-            Log.v(TAG, "Called createNotificationChannel");
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                Log.v(TAG, "creating notification channel");
                 NotificationChannel serviceChannel = new NotificationChannel(
                         CHANNEL_ID,
                         "Location Service Channel",
@@ -152,7 +138,6 @@ public class LocationService extends Service {
                 NotificationManager manager = getSystemService(NotificationManager.class);
                 manager.createNotificationChannel(serviceChannel);
             } else {
-                Log.v(TAG, "unable to create notification channel");
             }
         } catch (Exception error) {
             Log.v(TAG, "Exception in createNotificationChannel:" + error.getMessage());
@@ -161,7 +146,6 @@ public class LocationService extends Service {
 
     private Notification getNotification(Intent intent) {
         try {
-            Log.v(TAG, "Called getNotification");
             // Intent notificationIntent = new Intent(this, mainActivity.getClass());
             Intent notificationIntent = intent;
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
@@ -178,30 +162,30 @@ public class LocationService extends Service {
             }
             return builder.build();
         } catch (Exception error) {
-            Log.v(TAG, "Exception in getNotification:" + error.getMessage());
             return null;
         }
     }
 
     private LocationManager locationManager;
 
+    // Call this externally from your app right when the screen locks
+    // (or whenever you want to start polling for locations). This will
+    // clear any previously polled locations.
     public static boolean startPollingLocation() {
         if (instance == null) {
-            Log.v(TAG, "Called startPollingLocation with no existing instance");
             return false;
         }
 
-        Log.v(TAG, "Called startPollingLocation");
         return instance.startPollingLocationInternal();
     }
 
+    // Call this externally from your app once the screen is unlocked in order
+    // to stop polling for locations.
     public static boolean stopPollingLocation() {
         if (instance == null) {
-            Log.v(TAG, "Called stopPollingLocation with no existing instance");
             return false;
         }
 
-        Log.v(TAG, "Called stopPollingLocation");
         return instance.stopPollingLocationInternal();
     }
 
@@ -226,7 +210,6 @@ public class LocationService extends Service {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     currentInterval, MIN_LOCATION_POLL_METERS, locationListener, Looper.getMainLooper());
 
-            Log.v(TAG, "Started polling");
             isPolling = true;
             return true;
         } catch (Exception ex) {
@@ -248,8 +231,6 @@ public class LocationService extends Service {
             }
 
             locationManager.removeUpdates(locationListener);
-
-            Log.v(TAG, "Stopped polling");
             isPolling = false;
             return true;
         } catch (Exception ex) {
@@ -276,7 +257,6 @@ public class LocationService extends Service {
         }
 
         if (size % ITEMS_TO_INTERVAL_CHANGE == 0) {
-            Log.v(TAG, "Doubling interval");
             currentInterval *= 2;
             changeInterval(currentInterval);
         }
@@ -299,11 +279,9 @@ public class LocationService extends Service {
         @Override
         public void onLocationChanged(Location location) {
             if (instance == null) {
-                Log.v(TAG, "Cannot poll for locations: service instance is null");
                 return;
             }
 
-            Log.v(TAG, "Polled for location");
             instance.addCoordinate(new Coordinates(location.getLatitude(), location.getLongitude()));
         }
         @Override
@@ -311,6 +289,5 @@ public class LocationService extends Service {
         @Override
         public void onProviderDisabled(String provider) {}
     };
-
 }
 
